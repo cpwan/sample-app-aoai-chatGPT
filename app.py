@@ -6,6 +6,17 @@ import openai
 from flask import Flask, Response, request, jsonify
 from dotenv import load_dotenv
 
+import logging
+from rich.logging import RichHandler
+from rich.syntax import Syntax
+from rich.pretty import pretty_repr
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(message)s",
+    handlers=[RichHandler(markup=True)]
+)
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -183,6 +194,7 @@ def stream_without_data(response):
 
 
 def conversation_without_data(request):
+
     openai.api_type = "azure"
     openai.api_base = f"https://{AZURE_OPENAI_RESOURCE}.openai.azure.com/"
     openai.api_version = "2023-03-15-preview"
@@ -195,12 +207,13 @@ def conversation_without_data(request):
             "content": AZURE_OPENAI_SYSTEM_MESSAGE
         }
     ]
-
     for message in request_messages:
         messages.append({
             "role": message["role"] ,
             "content": message["content"]
         })
+    
+    logging.debug(pretty_repr(messages))
 
     response = openai.ChatCompletion.create(
         engine=AZURE_OPENAI_MODEL,
